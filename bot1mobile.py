@@ -1,5 +1,5 @@
 from telegram import Update
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+from telegram.ext import Updater, CommandHandler, MessageHandler, filters, CallbackContext
 
 #Токен бота
 TOKEN = '7727573588:AAHnvceU5d2BHf507280XX7XYtKhzSbuymk'
