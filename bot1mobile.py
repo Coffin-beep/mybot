@@ -12,10 +12,7 @@ def main():
     application = Application.builder().token(TOKEN).build()
 
     #Обработчик команд
-    dispatcher = application.dispatcher
-
-    #Обработчик команд
-    dispatcher.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("start", start))
 
     application.start_polling()
 
