@@ -1,11 +1,14 @@
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
+import os
 
 #Токен бота
-TOKEN = '7727573588:AAHnvceU5d2BHf507280XX7XYtKhzSbuymk'
+TOKEN = os.getenv('TOKEN')
 
-def start(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text('Илюха, привет!')
+
+async def start(update: Update, context: CallbackContext) -> None:
+    await update.message.reply_text('Илюха, привет!')
+
 
 def main():
     """Запуск бота"""
@@ -14,9 +17,8 @@ def main():
     #Обработчик команд
     application.add_handler(CommandHandler("start", start))
 
-    application.start_polling()
+    application.run_polling()
 
-    application.idle()
 
 if __name__ == '__main__':
     main()
