@@ -1,9 +1,9 @@
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
-import os
+
 
 #Токен бота
-TOKEN = os.getenv('TOKEN')
+TOKEN = '7727573588:AAHnvceU5d2BHf507280XX7XYtKhzSbuymk'
 
 
 async def start(update: Update, context: CallbackContext) -> None:
