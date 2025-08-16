@@ -1,9 +1,8 @@
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
-import os
 
 #Токен бота
-
+from config import TOKEN
 
 async def start(update: Update, context: CallbackContext) -> None:
     await update.message.reply_text('Илюха, привет!')
