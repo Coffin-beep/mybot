@@ -4,4 +4,4 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-TOKEN = os.getenv('TOKEN_BOT_1')
+TOKEN1 = os.getenv('TOKEN_BOT_1')
