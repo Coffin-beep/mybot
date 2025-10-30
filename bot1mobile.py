@@ -8,10 +8,17 @@ from telegram.ext import (
     ConversationHandler,
 )
 import time
-from datetime import datetime, timedelta
+import os
+from dotenv import load_dotenv
 
-#Токен бота
-from config import TOKEN1, MY_ID_CHAT
+load_dotenv()
+
+TOKEN1 = os.getenv('TOKEN_BOT_1')
+MY_ID_CHAT = os.getenv('MY_ID_CHAT')
+
+print(f"TOKEN loaded: {'YES' if TOKEN1 else 'NO'}")
+print(f"MY_ID_CHAT loaded: {'YES' if MY_ID_CHAT else 'NO'}")
+print(f"MY_ID_CHAT value: {MY_ID_CHAT}")
 
 TOKEN = TOKEN1
 ADMIN_ID_CHAT = MY_ID_CHAT
@@ -20,6 +27,7 @@ WAITING_FOR_SUGGESTION = 1
 user_cooldowns = {}
 
 async def start(update: Update, context: CallbackContext) -> None:
+    print(f"Start command from user: {update.message.from_user.username} (ID: {update.message.from_user.id})")
     await update.message.reply_text(
         'Добро пожаловать в канал с предложениями от CF GROUP!\n'
         'Здесь вы можете написать свои идеи для доработки канала.\n\n'
@@ -31,6 +39,9 @@ async def start(update: Update, context: CallbackContext) -> None:
 async def handle_suggestion(update: Update, context: CallbackContext) -> int:
     user = update.message.from_user
     current_time = time.time()
+    
+    print(f"Received suggestion from user: {user.username} (ID: {user.id})")
+    print(f"Message text: {update.message.text}")
 
     # Проверка кд
     if user.id in user_cooldowns:
@@ -47,13 +58,14 @@ async def handle_suggestion(update: Update, context: CallbackContext) -> int:
 
     # Пересылаем предложение админу
     try:
+        print(f"Attempting to send message to admin chat: {ADMIN_ID_CHAT}")
         forwarded_msg = await context.bot.send_message(
             chat_id=ADMIN_ID_CHAT,
             text=f"Новое предложение от @{user.username or 'N/A'} (ID: {user.id}):\n\n{update.message.text}"
         )
-        print(f"Сообщение отправлено админу. ID сообщения: {forwarded_msg.message_id}")
+        print(f"✅ Message successfully sent to admin. Message ID: {forwarded_msg.message_id}")
     except Exception as e:
-        print(f"Ошибка при отправке сообщения админу: {e}")
+        print(f"❌ Error sending message to admin: {e}")
         await update.message.reply_text(
             '❌ Произошла ошибка при отправке предложения. Попробуйте позже.'
         )
@@ -74,6 +86,16 @@ async def cancel(update: Update, context: CallbackContext) -> int:
 
 def main():
     """Запуск бота"""
+    print("Starting bot...")
+    
+    if not TOKEN:
+        print("❌ ERROR: TOKEN not loaded!")
+        return
+        
+    if not ADMIN_ID_CHAT:
+        print("❌ ERROR: ADMIN_ID_CHAT not loaded!")
+        return
+    
     application = Application.builder().token(TOKEN).build()
 
     # Обработчик команд
@@ -83,7 +105,7 @@ def main():
     # Обработчик текстовых сообщений (для предложений)
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_suggestion))
 
-    print("Бот запущен...")
+    print("Bot is running...")
     application.run_polling()
 
 if __name__ == '__main__':
