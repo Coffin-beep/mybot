@@ -20,18 +20,17 @@ WAITING_FOR_SUGGESTION = 1
 user_cooldowns = {}
 
 async def start(update: Update, context: CallbackContext) -> None:
-    await update.message.reply_text('Добро пожаловать в канал с предложениями от CF GROUP!\n'
+    await update.message.reply_text(
+        'Добро пожаловать в канал с предложениями от CF GROUP!\n'
         'Здесь вы можете написать свои идеи для доработки канала.\n\n'
         'Просто отправьте ваше предложение в этом чате.\n'
         'Обратите внимание: можно отправлять не чаще 1 предложения в 10 минут.',
         reply_markup=ReplyKeyboardRemove()
     )
 
-
 async def handle_suggestion(update: Update, context: CallbackContext) -> int:
     user = update.message.from_user
     current_time = time.time()
-
 
     # Проверка кд
     if user.id in user_cooldowns:
@@ -42,21 +41,29 @@ async def handle_suggestion(update: Update, context: CallbackContext) -> int:
                 f'Вы можете отправить следующее предложение только через {remaining_time} секунд.'
             )
             return ConversationHandler.END
+    
     # Обновляем время последнего сообщения
     user_cooldowns[user.id] = current_time
 
     # Пересылаем предложение админу
-    forwarded_msg = await context.bot.send_message(
-        chat_id=ADMIN_ID_CHAT,
-        text=f"Новое предложение от @{user.username} (ID: {user.id}):\n\n{update.message.text}"
-    )
+    try:
+        forwarded_msg = await context.bot.send_message(
+            chat_id=ADMIN_ID_CHAT,
+            text=f"Новое предложение от @{user.username or 'N/A'} (ID: {user.id}):\n\n{update.message.text}"
+        )
+        print(f"Сообщение отправлено админу. ID сообщения: {forwarded_msg.message_id}")
+    except Exception as e:
+        print(f"Ошибка при отправке сообщения админу: {e}")
+        await update.message.reply_text(
+            '❌ Произошла ошибка при отправке предложения. Попробуйте позже.'
+        )
+        return ConversationHandler.END
 
     await update.message.reply_text(
         '✅ Ваше предложение отправлено на модерацию! Спасибо за вашу активность.'
     )
 
     return ConversationHandler.END
-
 
 async def cancel(update: Update, context: CallbackContext) -> int:
     await update.message.reply_text(
@@ -65,29 +72,19 @@ async def cancel(update: Update, context: CallbackContext) -> int:
     )
     return ConversationHandler.END
 
-
 def main():
     """Запуск бота"""
     application = Application.builder().token(TOKEN).build()
 
-    #Обработчик команд
-    conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("start", start)],
-        states={
-            WAITING_FOR_SUGGESTION: [
-                MessageHandler(filters.TEXT & ~filters.COMMAND, handle_suggestion)
-            ],
-        },
-        fallbacks=[CommandHandler("cancel", cancel)],
-    )
-
-    application.add_handler(conv_handler)
+    # Обработчик команд
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("cancel", cancel))
 
     # Обработчик текстовых сообщений (для предложений)
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_suggestion))
 
+    print("Бот запущен...")
     application.run_polling()
-
 
 if __name__ == '__main__':
     main()
